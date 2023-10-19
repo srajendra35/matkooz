@@ -5,19 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\userCredential;
 use Carbon\Carbon;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Validator;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator as FacadesValidator;
+use Illuminate\Support\Facades\Validator;
+
+
 
 class AuthController extends Controller
 {
     public function createUser(Request $request)
     {
-        $validator = FacadesValidator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
@@ -26,13 +25,14 @@ class AuthController extends Controller
             'c_password' => 'required',
         ]);
 
+
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
                 "message" => $validator->errors()
             ], 400);
         }
-        //hello
+
         $userEmailCheck = User::where('email', $request->email)->first();
         if ($userEmailCheck) {
             return response()->json([
@@ -53,10 +53,10 @@ class AuthController extends Controller
         $user->last_name = $request->last_name;
         $user->email = $request->email;
         $user->phone = $request->phone;
-        $user->password = $request->password ? Hash::make($request->password) : null;;
-        $user->c_password = bcrypt($request->c_password) ? Hash::make($request->c_password) : null;;
+        $user->password = $request->password;
+        $user->c_password = bcrypt($request->c_password);
         $user->save();
-        //hello
+
         if ($request->password != $request->c_password) {
             return response()->json([
                 'success' => false,

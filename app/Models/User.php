@@ -15,9 +15,12 @@ class User extends Authenticatable implements JWTSubject
 
 
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
         'password',
+        'c-password'
     ];
 
 
@@ -33,7 +36,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function deviceToken()
     {
-        return $this->hasOne(DeviceToken::class, 'user_id');
+        return $this->hasOne(deviceToken::class, 'user_id');
     }
 
 

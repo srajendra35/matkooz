@@ -22,14 +22,11 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    // public function boot()
-    // {
-    //     $this->registerPolicies();
-
-    //     //
-    // }
-    public function boot(): void
+    public function boot()
     {
-        Passport::loadKeysFrom(__DIR__ . '/../secrets/oauth');
+        $this->registerPolicies();
+
+        //
     }
+
 }
