@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Models\userCredential;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Nette\Utils\Validators;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Validator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
 
 class AuthController extends Controller
 {
     public function createUser(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = FacadesValidator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
@@ -29,7 +32,7 @@ class AuthController extends Controller
                 "message" => $validator->errors()
             ], 400);
         }
-//hello
+        //hello
         $userEmailCheck = User::where('email', $request->email)->first();
         if ($userEmailCheck) {
             return response()->json([
@@ -53,7 +56,7 @@ class AuthController extends Controller
         $user->password = $request->password ? Hash::make($request->password) : null;;
         $user->c_password = bcrypt($request->c_password) ? Hash::make($request->c_password) : null;;
         $user->save();
-
+        //hello
         if ($request->password != $request->c_password) {
             return response()->json([
                 'success' => false,
@@ -73,38 +76,78 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
+        $credentials = $request->only('email', 'password');
+        $token = Auth::attempt($credentials);
+        if (!$token) {
             return response()->json([
-                'success' => false,
-                'message' => "user not found",
+                'status' => 'error',
+                'message' => 'Unauthorized',
             ], 401);
         }
 
-        if ($request->email && isset($user->id)) {
-            if (Hash::check($request->password, $user->password)) {
-                $token = $user->createToken('authToken');
-                $access_token = $token->accessToken;
-                $expire_at = Carbon::parse($token->token->expires_at)->toDateTimeString();
+        $user = Auth::user();
+        return response()->json([
+            'status' => 'success',
+            'user' => $user,
+            'authorisation' => [
+                'token' => $token,
+                'type' => 'bearer',
+            ]
+        ], 200);
+    }
 
-                return response()->json([
-                    'success' => true,
-                    'data' => array(
-                        'accessToken' => $access_token,
-                        'expiresAt' => $expire_at,
-                    )
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' =>  'Invalid Credentials!',
-                ], 401);
-            }
+    public static function forgetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+        $otp = rand(1000, 9999);
+        $user = User::where('email', $request->email)->first();
+        userCredential::updateOrCreate(
+            ['user_id' => $user->id],
+            ['otp' => $otp]
+        );
+        return response()->json(['message' => 'OTP sent to your email address.']);
+    }
+
+    public static function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required',
+            'password' => 'required|min:6',
+        ]);
+
+        $userCredential = UserCredential::where('otp', $request->otp)
+            ->whereHas('user', function ($query) use ($request) {
+                $query->where('email', $request->email);
+            })->first();
+
+        if (!$userCredential) {
+            return response()->json(['error' => 'Invalid OTP. Please try again.'], 422);
+        }
+        $user = $userCredential->user;
+        $user->update(['password' => Hash::make($request->password)]);
+        $userCredential->delete();
+        return response()->json(['message' => 'Password reset successfully.'], 200);
+    }
+
+    public static function userList(Request $request)
+    {
+        $userIdentity = User::where('id', Auth::user()->id)->first();
+        if (isset($userIdentity->id)) {
+            return response()->json([
+                "success" => true,
+                "data" => $userIdentity
+            ], 200);
+        } else {
+            return response()->json([
+                "success" => false,
+                "message" => "No user exists with this token"
+            ], 404);
         }
     }
 }
