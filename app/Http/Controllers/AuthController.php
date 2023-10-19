@@ -29,7 +29,7 @@ class AuthController extends Controller
                 "message" => $validator->errors()
             ], 400);
         }
-
+//hello
         $userEmailCheck = User::where('email', $request->email)->first();
         if ($userEmailCheck) {
             return response()->json([
