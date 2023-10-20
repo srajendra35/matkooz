@@ -16,6 +16,7 @@ class AuthController extends Controller
 {
     public function createUser(Request $request)
     {
+        // hello 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
