@@ -9,23 +9,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
-
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function createUser(Request $request)
+    public static function createUser(Request $request)
     {
-        // hello 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
             'phone' => 'required',
-            'password' => 'required',
-            'c_password' => 'required',
+            'password' => 'required'
         ]);
-
 
         if ($validator->fails()) {
             return response()->json([
@@ -54,24 +50,19 @@ class AuthController extends Controller
         $user->last_name = $request->last_name;
         $user->email = $request->email;
         $user->phone = $request->phone;
-        $user->password = $request->password;
-        $user->c_password = bcrypt($request->c_password);
+        $user->password = bcrypt($request->password);
         $user->save();
 
-        if ($request->password != $request->c_password) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Password & C_Password must be same ?',
-            ], 201);
-        } else {
-            $accessToken = $user->createToken('authToken')->accessToken;
-            return response()->json([
-                'success' => true,
-                'message' => 'User Registered successfully.',
-                'user' => $user,
-                'access_token' => $accessToken,
-            ], 201);
-        }
+        $token = JWTAuth::attempt([
+            'email' => $user->email,
+            'password' => $request->input('password'),
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'User Registered successfully.',
+            'user' => $user,
+            'access_token' => $token,
+        ], 201);
     }
 
     public function login(Request $request)
