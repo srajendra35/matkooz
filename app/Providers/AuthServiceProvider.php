@@ -29,8 +29,15 @@ class AuthServiceProvider extends ServiceProvider
     //     //
     // }
 
+<<<<<<< HEAD
     public function boot(): void
     {
         Passport::loadKeysFrom(__DIR__ . '/../secrets/oauth');
     }
+=======
+    // public function boot(): void
+    // {
+    //     Passport::loadKeysFrom(__DIR__ . '/../secrets/oauth');
+    // }
+>>>>>>> ea5b8755f48d1c2fc3da46d831978d057682e692
 }
