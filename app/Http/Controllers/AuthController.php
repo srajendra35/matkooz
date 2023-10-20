@@ -9,14 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
-
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
     public function createUser(Request $request)
     {
-        // hello 
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
@@ -54,7 +53,7 @@ class AuthController extends Controller
         $user->last_name = $request->last_name;
         $user->email = $request->email;
         $user->phone = $request->phone;
-        $user->password = $request->password;
+        $user->password = bcrypt($request->password);
         $user->c_password = bcrypt($request->c_password);
         $user->save();
 
@@ -64,26 +63,31 @@ class AuthController extends Controller
                 'message' => 'Password & C_Password must be same ?',
             ], 201);
         } else {
-            $accessToken = $user->createToken('authToken')->accessToken;
+
+            $token = JWTAuth::attempt([
+                'email' => $user->email,
+                'password' => $request->input('password'),
+            ]);
             return response()->json([
                 'success' => true,
                 'message' => 'User Registered successfully.',
                 'user' => $user,
-                'access_token' => $accessToken,
+                'access_token' => $token,
             ], 201);
         }
     }
 
     public function login(Request $request)
-
     {
-        // hello;
+
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
+
         $credentials = $request->only('email', 'password');
-        $token = Auth::attempt($credentials);
+        $token = JWTAuth::attempt($credentials);
+
         if (!$token) {
             return response()->json([
                 'status' => 'error',
@@ -91,15 +95,15 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = Auth::user();
+        // Authentication successful, return the token and other data
         return response()->json([
             'status' => 'success',
-            'user' => $user,
-            'authorisation' => [
+            'user' => JWTAuth::user(),
+            'authorization' => [
                 'token' => $token,
                 'type' => 'bearer',
-            ]
-        ], 200);
+            ],
+        ]);
     }
 
     public static function forgetPassword(Request $request)
