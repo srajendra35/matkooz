@@ -99,7 +99,7 @@ class CategoryController extends Controller
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id
         ]);
-        return response()->json(["success" => false, "message" => 'ChilCategory has been created successfully'], 201);
+        return response()->json(["success" => true, "message" => 'ChilCategory has been created successfully'], 201);
     }
 
     public static function getSubCategory(Request $request, Category $category)
@@ -109,7 +109,7 @@ class CategoryController extends Controller
             'success' => true,
             'message' => 'Subcategory List',
             'data' => $subcategories
-        ], 400);
+        ], 200);
     }
 
     public static function filter(Request $request, Category $category, Subcategory $subcategory)

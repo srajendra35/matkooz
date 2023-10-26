@@ -47,65 +47,56 @@ class AdminController extends Controller
         }
     }
 
-    // public static function AdminRegister(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required',
-    //         'email' => 'required',
-    //         'phone' => 'required',
-    //         'password' => 'required',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             "success" => false,
-    //             "message" => $validator->errors()
-    //         ], 400);
-    //     }
-
-    //     $userEmailCheck = Admin::where('email', $request->email)->first();
-    //     if ($userEmailCheck) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Email ' . $request->email . ' is already exists!!',
-    //         ], 409);
-    //     }
-    //     $userPhoneCheck = Admin::where('phone', $request->phone)->first();
-    //     if ($userPhoneCheck) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'phone' . $request->phone . ' is already exists!!',
-    //         ], 409);
-    //     }
-
-    //     $admin = new Admin();
-    //     $admin->name = $request->name;
-    //     $admin->email = $request->email;
-    //     $admin->phone = $request->phone;
-    //     $admin->password = bcrypt($request->password);
-
-    //     $admin->save();
-
-    //     $token = JWTAuth::attempt([
-    //         'email' => $request->email,
-    //         'password' => $request->input('password'),
-    //     ]);
-    //     echo 'admin' . $token;
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Admin Registered successfully.',
-    //         'user' => $admin,
-    //         'access_token' => $token,
-    //     ], 201);
-    // }
-
-
-    public function me()
+    public static function AdminRegister(Request $request)
     {
-        return response()->json([
-            'status' => 'success',
-            'user' => Auth::user(),
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+            'password' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "success" => false,
+                "message" => $validator->errors()
+            ], 400);
+        }
+
+        $userEmailCheck = Admin::where('email', $request->email)->first();
+        if ($userEmailCheck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email ' . $request->email . ' is already exists!!',
+            ], 409);
+        }
+        $userPhoneCheck = Admin::where('phone', $request->phone)->first();
+        if ($userPhoneCheck) {
+            return response()->json([
+                'success' => false,
+                'message' => 'phone' . $request->phone . ' is already exists!!',
+            ], 409);
+        }
+
+        $admin = new Admin();
+        $admin->name = $request->name;
+        $admin->email = $request->email;
+        $admin->phone = $request->phone;
+        $admin->password = bcrypt($request->password);
+
+        $admin->save();
+
+        $token = JWTAuth::attempt([
+            'email' => $request->email,
+            'password' => $request->input('password'),
+        ]);
+        echo 'admin' . $token;
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin Registered successfully.',
+            'user' => $admin,
+            'access_token' => $token,
+        ], 201);
     }
 
     public static function admin(Request $request)

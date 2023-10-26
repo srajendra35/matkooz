@@ -17,11 +17,11 @@ class Childcategory extends Model
 
     public function subcategories()
     {
-        return $this->belongsTo(Subcategory::class, 'subcategory_id');
+        return $this->belongsTo(Subcategory::class);
     }
 
-    public  function Category()
-    {
-        return $this->belongsTo(Category::class);
-    }
+    // public  function Category()
+    // {
+    //     return $this->belongsTo(Category::class);
+    // }
 }

@@ -18,8 +18,8 @@ class Category extends Model
     {
         return $this->hasMany(Subcategory::class, 'category_id');
     }
-    public function childCategory()
-    {
-        return $this->hasMany(Subcategory::class, 'childcategory_id');
-    }
+    // public function childCategory()
+    // {
+    //     return $this->hasMany(Childcategory::class, 'childcategory_id');
+    // }
 }

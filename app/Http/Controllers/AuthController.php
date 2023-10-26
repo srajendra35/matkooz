@@ -130,7 +130,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Password reset successfully.'], 200);
     }
 
-    public static function userList(Request $request)
+    public static function AuthUser(Request $request)
     {
         $userIdentity = User::where('id', Auth::user()->id)->first();
         if (isset($userIdentity->id)) {
