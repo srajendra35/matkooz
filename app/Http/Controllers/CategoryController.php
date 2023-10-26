@@ -3,87 +3,132 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Childcategory;
+use App\Models\Subcategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
-
-    public function index()
+    public function __construct()
     {
-        $categories = Category::with('children')->whereNull('parent_id')->get();
-        return response()->json([
-            "success" => true,
-            "message" => "category !!!",
-            "data" => $categories
-        ], 404);
-        // return view('categories.index')->with([
-        //     'categories'  => $categories
-        // ]);
+        $this->middleware('auth:admin');
     }
 
-
-    public function create()
+    public static function CreateCategory(Request $request)
     {
-        //
-    }
-
-
-    public function store(Request $request)
-    {
-        $validatedData = $this->validate($request, [
-            'name'      => 'required|min:3|max:255|string',
-            'parent_id' => 'sometimes|nullable|numeric'
+        $validator =  Validator::make($request->all(), [
+            'name' => 'required',
+            'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        Category::create($validatedData);
+        $category = Category::where('name', $request->name)->exists();
+        if ($category) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'Category already exists',
+            ], 409);
+        }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'Error',
+                'data' => $validator->errors()
+            ], 400);
+        }
+        Category::create([
+            'name' => $request->name,
+            'image' => $request->image,
+        ]);
+        return response()->json(["success" => false, "message" => 'Category has been created successfully'], 201);
+    }
+
+    public static function CreateSubCategory(Request $request)
+    {
+        $validator =  Validator::make($request->all(), [
+            'name' => 'required',
+            'category_id' => 'nullable|string',
+        ]);
+
+        $category = Subcategory::where('name', $request->name)->exists();
+        if ($category) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'subCategory already exists',
+            ], 409);
+        }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'Error',
+                'data' => $validator->errors()
+            ], 400);
+        }
+        Subcategory::create([
+            'name' => $request->name,
+            'category_id' => $request->category_id
+        ]);
+        return response()->json(["success" => false, "message" => 'SubCategory has been created successfully'], 201);
+    }
+
+    public static function CreateChildcategory(Request $request)
+    {
+        $validator =  Validator::make($request->all(), [
+            'name' => 'required',
+            'category_id' => 'nullable|string',
+            'subcategory_id' => 'nullable|string'
+        ]);
+
+        $category = Childcategory::where('name', $request->name)->exists();
+        if ($category) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'ChildCategory already exists',
+            ], 409);
+        }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' =>  'Error',
+                'data' => $validator->errors()
+            ], 400);
+        }
+        Childcategory::create([
+            'name' => $request->name,
+            'category_id' => $request->category_id,
+            'subcategory_id' => $request->subcategory_id
+        ]);
+        return response()->json(["success" => false, "message" => 'ChilCategory has been created successfully'], 201);
+    }
+
+    public static function getSubCategory(Request $request, Category $category)
+    {
+        $subcategories = Subcategory::where('category_id', '<>', $category->id)->with('childCategory')->get();
         return response()->json([
-            "success" => true,
-            "message" => "category Create Successfully!"
-        ], 404);
+            'success' => true,
+            'message' => 'Subcategory List',
+            'data' => $subcategories
+        ], 400);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public static function filter(Request $request, Category $category, Subcategory $subcategory)
     {
-        //
+        $mark = Category::whereHas('subCtegories', function ($query) use ($request) {
+            $query->whereHas('childCategory', function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->input('name') . '%');
+            });
+        })->first();
+        return response()->json([
+            'success' => true,
+            'message' => 'Category List By using of ChildCategory List',
+            'data' => $mark
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function ShowCategoryList()
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        $categories = Category::with(['subCtegories', 'subCtegories.childCategory'])->get();
+        return response()->json($categories);
     }
 }

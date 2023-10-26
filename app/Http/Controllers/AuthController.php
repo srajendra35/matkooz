@@ -20,7 +20,8 @@ class AuthController extends Controller
             'last_name' => 'required',
             'email' => 'required',
             'phone' => 'required',
-            'password' => 'required'
+            'password' => 'required',
+            'role_id' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -51,6 +52,8 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->password = bcrypt($request->password);
+        $user->role_id = $request->role_id;
+
         $user->save();
 
         $token = JWTAuth::attempt([
@@ -66,9 +69,7 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-
     {
-        // hello;
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',

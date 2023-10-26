@@ -6,21 +6,20 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+// use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class Admin extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
-
-
     protected $fillable = [
-        'first_name',
-        'last_name',
+        'name',
         'email',
         'phone',
         'password',
-        'role_id'
     ];
+
+
     protected $hidden = [
         'password',
         'c_password',
@@ -31,10 +30,8 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
-    public function deviceToken()
-    {
-        return $this->hasOne(deviceToken::class, 'user_id');
-    }
+
+
 
     public function getJWTIdentifier()
     {
