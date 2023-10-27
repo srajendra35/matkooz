@@ -13,7 +13,7 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public static function createUser(Request $request)
+    public static function registerUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'first_name' => 'required',
@@ -143,6 +143,39 @@ class AuthController extends Controller
                 "success" => false,
                 "message" => "No user exists with this token"
             ], 404);
+        }
+    }
+
+    public static function Adminlogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+        if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
+            $token = Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password]);
+
+            if (!$token) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized',
+                ], 401);
+            }
+
+            $admin = Auth::guard('admin')->user();
+            return response()->json([
+                'status' => 'success',
+                'admin' => $admin,
+                'authorisation' => [
+                    'token' => $token,
+                    'type' => 'bearer',
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'Error',
+                'message' => "Admin Not Found"
+            ]);
         }
     }
 }

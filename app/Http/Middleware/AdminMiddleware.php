@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,8 +13,8 @@ class AdminMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        $userCheck = User::where('id', Auth::user()->role_id)->first();
-        if (isset($userCheck->role_name) && ($userCheck->role_name === 'Admin')) {
+        $userCheck = Admin::first();
+        if (isset($userCheck->name) && ($userCheck->name === 'jitendra')) {
             return $next($request);
         } else {
             return response()->json([
