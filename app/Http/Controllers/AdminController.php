@@ -17,7 +17,7 @@ class AdminController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:admin');
+        // $this->middleware('auth:admin');
     }
 
     public function updateCategory(Request $request, $id)
@@ -30,7 +30,7 @@ class AdminController extends Controller
             return response()->json(['error' => 'Category not found.'], 404);
         } else if ($existingName) {
             return response()->json([
-                'error' => 'Category already exists.'
+                'error' => 'Category already exixsts.'
             ], 409);
         } else {
             $category->name = $request->input('name', $category->name);
@@ -43,100 +43,6 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Only Admin can Change Category',
         ], 200);
-    }
-
-    // public static function AdminRegister(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required',
-    //         'email' => 'required',
-    //         'phone' => 'required',
-    //         'password' => 'required',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             "success" => false,
-    //             "message" => $validator->errors()
-    //         ], 400);
-    //     }
-
-    //     $userEmailCheck = Admin::where('email', $request->email)->first();
-    //     if ($userEmailCheck) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Email ' . $request->email . ' is already exists!!',
-    //         ], 409);
-    //     }
-    //     $userPhoneCheck = Admin::where('phone', $request->phone)->first();
-    //     if ($userPhoneCheck) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'phone' . $request->phone . ' is already exists!!',
-    //         ], 409);
-    //     }
-
-    //     $admin = new Admin();
-    //     $admin->name = $request->name;
-    //     $admin->email = $request->email;
-    //     $admin->phone = $request->phone;
-    //     $admin->password = bcrypt($request->password);
-
-    //     $admin->save();
-
-    //     $token = JWTAuth::attempt([
-    //         'email' => $request->email,
-    //         'password' => $request->input('password'),
-    //     ]);
-    //     echo 'admin' . $token;
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Admin Registered successfully.',
-    //         'user' => $admin,
-    //         'access_token' => $token,
-    //     ], 201);
-    // }
-
-    public static function Product(Request $request)
-    {
-        $validator =  Validator::make($request->all(), [
-            'name' => 'required|string',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'description' => 'string',
-            'user_id' => 'integer',
-            'category_id' => 'required|string',
-            'price' => 'required|numeric',
-            'weight' => 'integer',
-            'weight_unit' => 'string',
-            'offer_id' => 'string',
-        ]);
-
-        $category = Product::where('name', $request->name)->exists();
-        if ($category) {
-            return response()->json([
-                'success' => false,
-                'message' =>  'Product already exists',
-            ], 409);
-        }
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' =>  'Error',
-                'data' => $validator->errors()
-            ], 400);
-        }
-        Product::create([
-            'name' => $request->name,
-            'image' => $request->image,
-            'description' => $request->description,
-            'user_id' => $request->user_id,
-            'category_id' => $request->category_id,
-            'price' => $request->price,
-            'weight' => $request->weight,
-            'weight_unit' => $request->weight_unit,
-            'offer_id' => $request->offer_id,
-        ]);
-        return response()->json(["success" => false, "message" => 'Product has been created successfully'], 201);
     }
 
     public static function Offer(Request $request)

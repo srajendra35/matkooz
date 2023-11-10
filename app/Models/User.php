@@ -34,10 +34,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Product::class, 'user_id');
     }
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     public function deviceToken()
     {
         return $this->hasOne(deviceToken::class, 'user_id');
+    }
+
+    public function notification()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
     }
 
     public function getJWTIdentifier()

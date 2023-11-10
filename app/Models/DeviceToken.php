@@ -5,17 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class DeviceToken extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'id',
-        'role_name',
+        'user_id',
+        'token',
+        'type',
+        'status',
     ];
 
     public function user()
     {
-        return $this->hasMany(User::class, 'role_id');
+        return $this->belongsTo(User::class);
     }
 }

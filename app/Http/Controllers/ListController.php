@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\Subcategory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -57,4 +58,16 @@ class ListController extends Controller
     //         'data' => $user
     //     ], 200);
     // }
+
+
+
+    public static function lists()
+    {
+        $product = Role::select('id', 'role_name')
+            ->with(['user'])->get();
+        return response()->json([
+            "success" => true,
+            "data" => $product
+        ], 200);
+    }
 }

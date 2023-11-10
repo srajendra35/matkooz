@@ -1,24 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin\Category;
 
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Childcategory;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:admin');
-    }
-
     /////////////////////////   Admin APIs  ////////////////////////////////////////////////////////
     public static function CreateCategory(Request $request)
     {
+
         $validator =  Validator::make($request->all(), [
             'name' => 'required',
             'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',

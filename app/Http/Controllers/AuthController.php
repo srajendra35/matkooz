@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\User;
 use App\Models\userCredential;
-use Carbon\Carbon;
+use App\Notifications\LoginAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,8 @@ class AuthController extends Controller
                 "message" => $validator->errors()
             ], 400);
         }
+        $user = User::exists();
+
 
         $userEmailCheck = User::where('email', $request->email)->first();
         if ($userEmailCheck) {
@@ -74,6 +77,8 @@ class AuthController extends Controller
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
+
+
         $credentials = $request->only('email', 'password');
         $token = Auth::attempt($credentials);
         if (!$token) {
@@ -82,15 +87,17 @@ class AuthController extends Controller
                 'message' => 'Unauthorized',
             ], 401);
         }
+        // $user = User::find(Auth::user()->id);
+        // $message = "We have noticed a login from a new device and want to make sure it`s you ";
+        // $device = 'iPhone 14 Pro Max';
+        // $time = User::select('created_at')->get();
+        // $user->notify(new LoginAccount($message, $device, $time));
 
         $user = Auth::user();
         return response()->json([
-            'status' => 'success',
+            'status' => true,
             'user' => $user,
-            'authorisation' => [
-                'token' => $token,
-                'type' => 'bearer',
-            ]
+            'token' => $token,
         ], 200);
     }
 
@@ -152,24 +159,23 @@ class AuthController extends Controller
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
+        $user = Admin::where('email', $request->email)->first();
+
         if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password]);
 
             if (!$token) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Unauthorized',
                 ], 401);
             }
 
             $admin = Auth::guard('admin')->user();
             return response()->json([
-                'status' => 'success',
-                'admin' => $admin,
-                'authorisation' => [
-                    'token' => $token,
-                    'type' => 'bearer',
-                ]
+                'status' => true,
+                'admin' => $admin->name,
+                'token' => $token,
             ]);
         } else {
             return response()->json([
@@ -177,5 +183,37 @@ class AuthController extends Controller
                 'message' => "Admin Not Found"
             ]);
         }
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::find(Auth::user()->id);
+        $existingName = User::where('first_name', $request->first_name)->where('id', '!=', $user->id)->exists();
+        $existingEmail = User::where('email', $request->email)->where('id', '!=', $user->id)->exists();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        } else if ($existingName) {
+            return response()->json([
+                'error' => 'User already exists.'
+            ], 409);
+        } else if ($existingEmail) {
+            return response()->json([
+                "status" => false,
+                'error' => 'Email already exists.'
+            ], 409);
+        } else {
+            $user->first_name = $request->input('first_name', $user->first_name);
+            $user->email = $request->input('email', $user->email);
+
+            $user->save();
+            return response()->json([
+                'message' => 'user updated successfully',
+                'data' => $user,
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Only Admin can Change user',
+        ], 200);
     }
 }

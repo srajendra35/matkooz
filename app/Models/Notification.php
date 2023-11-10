@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class Notification extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'id',
-        'role_name',
+        'user_id',
+        'type',
+        'message',
     ];
-
     public function user()
     {
-        return $this->hasMany(User::class, 'role_id');
+        return $this->belongsTo(User::class);
     }
 }
